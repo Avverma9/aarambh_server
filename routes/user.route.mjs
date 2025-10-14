@@ -11,7 +11,7 @@ import {
 
 const router = express.Router();
 
-router.route('/')
+router.route('/register')
   .post(createUser);
 
 router.route('/:userId')

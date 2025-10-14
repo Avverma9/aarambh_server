@@ -21,7 +21,7 @@ const userSchema = new mongoose.Schema({
     type: Date,
     required: [true, 'Date of birth is required.'],
   },
-  phoneNumber: {
+  mobile: {
     type: String,
     required: [true, 'Mobile number is required.'],
     unique: true,
@@ -164,6 +164,9 @@ const userSchema = new mongoose.Schema({
     unique: true,
     sparse: true,
   },
+  refreshToken: {
+    type: String,
+  },
 
   // Section 10: Partner Preferences
   partnerPreferences: {
@@ -186,4 +189,3 @@ const userSchema = new mongoose.Schema({
 const User = mongoose.model('User', userSchema);
 
 export default User;
-

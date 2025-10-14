@@ -5,16 +5,16 @@ import User from "../models/user.model.mjs";
 const router = express.Router();
 
 router.post("/send-otp", async (req, res) => {
-  const { phoneNumber } = req.body;
-  if (!phoneNumber) {
+  const { mobile } = req.body;
+  if (!mobile) {
     return res.status(400).json({ success: false, error: "Phone number is required" });
   }
-  const checkExisting = await User.findOne({ phoneNumber });
+  const checkExisting = await User.findOne({ mobile });
   if (!checkExisting) {
     return res.status(404).json({ success: false, error: 'Phone number not registered' });
   }
   try {
-    const response = await sendOtp(phoneNumber);
+    const response = await sendOtp(mobile);
     res.json(response);
   } catch (error) {
     console.error("Error sending OTP:", error);
@@ -23,13 +23,13 @@ router.post("/send-otp", async (req, res) => {
 });
 
 router.post("/verify-otp", async (req, res) => {
-  const { phoneNumber, code } = req.body;
-  if (!phoneNumber || !code) {
+  const { mobile, code } = req.body;
+  if (!mobile || !code) {
     return res.status(400).json({ success: false, error: "Phone number and code are required" });
   }
 
   try {
-    const response = await verifyOtp(phoneNumber, code);
+    const response = await verifyOtp(mobile, code);
     res.json(response);
   } catch (error) {
     console.error("Error verifying OTP:", error);

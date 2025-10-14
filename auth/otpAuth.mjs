@@ -10,11 +10,11 @@ const serviceSid = process.env.TWILIO_VERIFY_SERVICE_SID;
 
 const client = twilio(accountSid, authToken);
 
-async function sendOtp(phoneNumber) {
+async function sendOtp(mobile) {
   try {
     const verification = await client.verify.v2
       .services(serviceSid)
-      .verifications.create({ to: phoneNumber, channel: 'sms' });
+      .verifications.create({ to: mobile, channel: 'sms' });
 
     return {
       success: true,
@@ -29,11 +29,11 @@ async function sendOtp(phoneNumber) {
   }
 }
 
-async function verifyOtp(phoneNumber, code) {
+async function verifyOtp(mobile, code) {
   try {
     const verificationCheck = await client.verify.v2
       .services(serviceSid)
-      .verificationChecks.create({ to: phoneNumber, code });
+      .verificationChecks.create({ to: mobile, code });
 
     return {
       success: verificationCheck.status === 'approved',

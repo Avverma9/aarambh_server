@@ -3,14 +3,14 @@ import User from '../models/user.model.mjs';
 export const createUser = async (req, res) => {
   try {
     const { 
-      profileCreatedFor, fullName, gender, dob, phoneNumber, maritalStatus, email 
+      profileCreatedFor, fullName, gender, dob, mobile, maritalStatus, email 
     } = req.body;
 
-    if (!profileCreatedFor || !fullName || !gender || !dob || !phoneNumber || !maritalStatus) {
+    if (!profileCreatedFor || !fullName || !gender || !dob || !mobile || !maritalStatus) {
       return res.status(400).json({ message: 'Kripya sabhi zaroori fields bharein.' });
     }
 
-    const userExists = await User.findOne({ phoneNumber });
+    const userExists = await User.findOne({ mobile });
     if (userExists) {
       return res.status(400).json({ message: 'Is mobile number se user pehle se registered hai.' });
     }
@@ -20,7 +20,7 @@ export const createUser = async (req, res) => {
       fullName,
       gender,
       dob,
-      phoneNumber,
+      mobile,
       maritalStatus,
       email
     });
@@ -30,7 +30,7 @@ export const createUser = async (req, res) => {
         message: 'User profile safaltapoorvak banaya gaya.',
         _id: user._id,
         fullName: user.fullName,
-        phoneNumber: user.phoneNumber,
+        mobile: user.mobile,
       });
     } else {
       res.status(400).json({ message: 'User data aमान्य hai.' });
