@@ -41,6 +41,7 @@ export const createUser = async (req, res) => {
   }
 };
 
+
 export const getUserProfile = async (req, res) => {
   try {
     const user = await User.findById(req.params.userId);

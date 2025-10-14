@@ -156,7 +156,7 @@ const userSchema = new mongoose.Schema({
   // Section 9: Account Management & Authentication
   accountStatus: {
     type: String,
-    enum: ['Active', 'Inactive', 'VerificationPending', 'Suspended'],
+    enum: ['Active', 'Inactive', 'VerificationPending', 'Suspended','Verified'],
     default: 'VerificationPending',
   },
   googleId: {
