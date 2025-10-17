@@ -11,8 +11,8 @@ import {
 
 const router = express.Router();
 
-router.route('/register')
-  .post(createUser);
+
+router.post("/register",createUser)
 
 router.route('/:userId')
   .get(getUserProfile)

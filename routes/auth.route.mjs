@@ -4,7 +4,7 @@ import User from "../models/user.model.mjs";
 
 const router = express.Router();
 
-router.post("/send-otp", async (req, res) => {
+router.post("/send-mobile-otp", async (req, res) => {
   const { mobile } = req.body;
   if (!mobile) {
     return res.status(400).json({ success: false, error: "Phone number is required" });
@@ -22,7 +22,7 @@ router.post("/send-otp", async (req, res) => {
   }
 });
 
-router.post("/verify-otp", async (req, res) => {
+router.post("/verify-mobile-otp", async (req, res) => {
   const { mobile, code } = req.body;
   if (!mobile || !code) {
     return res.status(400).json({ success: false, error: "Phone number and code are required" });

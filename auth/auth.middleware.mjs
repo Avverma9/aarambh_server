@@ -20,7 +20,7 @@ export const authMiddleware = async (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'matrimony_secret_key');
 
     // Check if user still exists
-    const user = await User.findById(decoded.userId);
+    const user = await User.findById(decoded._id);
     if (!user) {
       return res.status(401).json({
         success: false,
@@ -64,7 +64,7 @@ export const authMiddleware = async (req, res, next) => {
 // Optional middleware - check if user is admin
 export const adminMiddleware = async (req, res, next) => {
   try {
-    const user = await User.findById(req.user.userId);
+    const user = await User.findById(req.user._id);
 
     // You can add admin role to user schema or check specific conditions
     // For now, checking if user has admin email or specific field

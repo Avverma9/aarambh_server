@@ -3,8 +3,8 @@ import User from "../models/user.model.mjs";
 
 export const loginUser = async (req, res) => {
   const { mobile, email } = req.body;
-  if (email && mobile) {
-    const detail = email || mobile;
+   const detail = email || mobile;
+  if (detail) {
     const user = User.findOne({ detail });
     if(!user){
         return res.status(404).json({ message: "User not found" });
