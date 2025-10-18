@@ -3,7 +3,7 @@ import User from '../models/user.model.mjs';
 export const createUser = async (req, res) => {
   try {
     const { 
-      profileCreatedFor, fullName, gender, dob, mobile, maritalStatus, email 
+      profileCreatedFor, fullName, gender, dob, mobile, maritalStatus, email , ...data
     } = req.body;
 
     if (!profileCreatedFor || !fullName || !gender || !dob || !mobile || !maritalStatus) {
@@ -22,7 +22,8 @@ export const createUser = async (req, res) => {
       dob,
       mobile,
       maritalStatus,
-      email
+      email,
+      ...data
     });
 
     if (user) {

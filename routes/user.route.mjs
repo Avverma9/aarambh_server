@@ -8,13 +8,16 @@ import {
   setPrimaryImage,
   deleteImage
 } from '../controllers/user.controller.mjs';
+import { register } from '../controllers/auth.controller.mjs';
+import { authMiddleware } from '../auth/auth.middleware.mjs';
 
 const router = express.Router();
 
 
-router.post("/register",createUser)
+router.post("/register",register)
+router.post("/create-profile",createUser)
 
-router.route('/:userId')
+router.route('/:userId',authMiddleware,)
   .get(getUserProfile)
   .put(updateUserProfile)
   .delete(deleteUser);

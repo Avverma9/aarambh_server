@@ -1,17 +1,35 @@
-import jwt from "jsonwebtoken";
 import User from "../models/user.model.mjs";
 
-export const loginUser = async (req, res) => {
-  const { mobile, email } = req.body;
-   const detail = email || mobile;
-  if (detail) {
-    const user = User.findOne({ detail });
-    if(!user){
-        return res.status(404).json({ message: "User not found" });
-    }
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "1h",
+export const register = async (req, res) => {
+  try {
+    const {
+      profileCreatedFor,
+      fullName,
+      gender,
+      dob,
+      mobile,
+      maritalStatus,
+      email,
+    } = req.body;
+
+    // Extract image locations from files array, if any
+    const images = req.files ? req.files.map((file) => file.location || file.path) : [];
+
+    // Create user document
+    const user = await User.create({
+      profileCreatedFor,
+      fullName,
+      gender,
+      dob,
+      mobile,
+      maritalStatus,
+      email,
+      images,
     });
-    res.json({ data: user, token });
+
+    return res.status(201).json({ message: "User registered successfully", userId: user._id });
+  } catch (error) {
+    console.error("Error during user registration:", error);
+    return res.status(500).json({ message: "Registration failed", error: error.message });
   }
 };
