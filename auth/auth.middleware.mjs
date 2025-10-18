@@ -15,11 +15,7 @@ export const authMiddleware = async (req, res, next) => {
     }
 
     const token = authHeader.substring(7); // Remove 'Bearer ' prefix
-
-    // Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'matrimony_secret_key');
-
-    // Check if user still exists
     const user = await User.findById(decoded._id);
     if (!user) {
       return res.status(401).json({
@@ -27,19 +23,14 @@ export const authMiddleware = async (req, res, next) => {
         message: 'Token is no longer valid. User not found.'
       });
     }
-
-    // Check if account is active
     if (user.accountStatus === 'Suspended') {
       return res.status(403).json({
         success: false,
         message: 'Account is suspended. Please contact support.'
       });
     }
-
-    // Add user info to request object
     req.user = decoded;
     next();
-
   } catch (error) {
     if (error.name === 'JsonWebTokenError') {
       return res.status(401).json({
