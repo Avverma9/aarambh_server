@@ -57,69 +57,81 @@ router.post("/verify-otp", async (req, res) => {
     if (!email || !otp) {
       return res.status(400).json({ message: "Email and OTP required" });
     }
+
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-    // Check OTP validity
+
     if (String(otpStore[email]) !== String(otp)) {
       return res.status(400).json({ message: "Invalid OTP or email" });
     }
 
-    // OTP valid, delete it
     delete otpStore[email];
-    // Create JWT payload
+
     const payload = { userId: user._id, email: user.email };
 
-    // Generate Access Token (expires in 15 minutes)
-    const accessToken = jwt.sign(
-      payload,
-      process.env.JWT_SECRET,
-      { expiresIn: "1m" }
-    );
+    const accessToken = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "15m" });
+    const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH_SECRET, { expiresIn: "7d" });
 
-    // Generate Refresh Token (expires in 7 days)
-    const refreshToken = jwt.sign(
-      payload,
-      process.env.JWT_REFRESH_SECRET,
-      { expiresIn: "7d" }
-    );
-
-    // Save refresh token to the user in the database
     user.refreshToken = refreshToken;
     await user.save();
 
-    // Send tokens in response
-    return res.status(200).json({ message: "OTP verified successfully", accessToken, refreshToken });
+    // ✅ Set Access Token in HttpOnly cookie
+    res.cookie("accessToken", accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production", // true in production (HTTPS)
+      sameSite: "strict",
+      maxAge: 1 * 60 * 1000, // 15 minutes
+    });
 
+    // ✅ Optionally also set refresh token as cookie
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+
+     return res.status(200).json({ message: "OTP verified successfully", accessToken, refreshToken });
   } catch (error) {
     console.error("Error verifying email OTP:", error);
     res.status(500).json({ message: "Failed to verify OTP", error: error.message });
   }
 });
 
-router.post("/refresh-token", async (req, res) => {
-  const { token } = req.body;
 
-  if (!token) {
+router.post("/refresh-token", async (req, res) => {
+  const refreshToken = req.cookies.refreshToken;
+
+  if (!refreshToken) {
     return res.status(401).json({ message: "Refresh token not provided" });
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
-
+    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
     const user = await User.findById(decoded.userId);
-    if (!user || user.refreshToken !== token) {
+
+    if (!user || user.refreshToken !== refreshToken) {
       return res.status(403).json({ message: "Invalid refresh token" });
     }
 
     const payload = { userId: user._id, email: user.email };
-    const newAccessToken = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '15m' });
+    const newAccessToken = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "15m" });
 
-    res.json({ accessToken: newAccessToken });
+    // ✅ Update the cookie with new access token
+    res.cookie("accessToken", newAccessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 15 * 60 * 1000,
+    });
+
+    res.json({ message: "New access token issued" });
   } catch (error) {
     return res.status(403).json({ message: "Invalid or expired refresh token", error: error.message });
   }
 });
+
 
 export default router;

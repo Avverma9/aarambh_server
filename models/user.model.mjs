@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema(
   {
+    // Basic Profile
     profileCreatedFor: {
       type: String,
       enum: [
@@ -20,6 +21,7 @@ const userSchema = new mongoose.Schema(
       required: [true, "Full name is required."],
       trim: true,
     },
+    age:Number,
     gender: {
       type: String,
       enum: ["Male", "Female", "Other"],
@@ -38,18 +40,17 @@ const userSchema = new mongoose.Schema(
     email: {
       type: String,
       unique: true,
-      trim: true,
-      lowercase: true,
       sparse: true,
+      lowercase: true,
+      trim: true,
     },
     profileCompleted: {
-      type: Number,
+      type: Boolean,
       default: false,
     },
 
-    height: {
-      type: Number,
-    },
+    // Physical Attributes
+    height: Number,
     bodyType: {
       type: String,
       enum: ["Slim", "Athletic", "Average", "Heavy"],
@@ -57,11 +58,6 @@ const userSchema = new mongoose.Schema(
     complexion: {
       type: String,
       enum: ["Very Fair", "Fair", "Wheatish", "Dark"],
-    },
-    maritalStatus: {
-      type: String,
-      enum: ["Never Married", "Divorced", "Widowed", "Awaiting Divorce"],
-      required: true,
     },
     diet: {
       type: String,
@@ -72,68 +68,44 @@ const userSchema = new mongoose.Schema(
       default: "None",
     },
 
-    religion: {
+    // Marital Status & Astrology
+    maritalStatus: {
       type: String,
-      trim: true,
+      enum: ["Never Married", "Divorced", "Widowed", "Awaiting Divorce"],
+      required: true,
     },
-    motherTongue: {
-      type: String,
-      trim: true,
-    },
-    caste: {
-      type: String,
-      trim: true,
-    },
-    subCaste: {
-      type: String,
-      trim: true,
-    },
-    gotra: {
-      type: String,
-      trim: true,
-    },
+    religion: { type: String, trim: true },
+    motherTongue: { type: String, trim: true },
+    caste: { type: String, trim: true },
+    subCaste: { type: String, trim: true },
+    gotra: { type: String, trim: true },
     manglikStatus: {
       type: String,
       enum: ["Yes", "No", "Partial", "Don't Know"],
       default: "Don't Know",
     },
+    rashi: { type: String, trim: true },
+    nakshatra: { type: String, trim: true },
+    timeOfBirth: String,
+    placeOfBirth: String,
 
-    rashi: {
-      type: String,
-      trim: true,
-    },
-    nakshatra: {
-      type: String,
-      trim: true,
-    },
-    timeOfBirth: {
-      type: String,
-    },
-    placeOfBirth: {
-      type: String,
-    },
-
+    // Geolocation & Residence
     location: {
       city: String,
       state: String,
-      country: {
-        type: String,
-        default: "India",
+      country: { type: String, default: "India" },
+      coordinates: {
+        type: { type: String, enum: ["Point"], default: "Point" },
+        coordinates: { type: [Number], index: "2dsphere", default: [] }, // [lng, lat]
       },
     },
 
-    highestEducation: {
-      type: String,
-      trim: true,
-    },
-    profession: {
-      type: String,
-      trim: true,
-    },
-    annualIncome: {
-      type: String,
-    },
+    // Education & Profession
+    highestEducation: { type: String, trim: true },
+    profession: { type: String, trim: true },
+    annualIncome: String,
 
+    // Family Details
     familyDetails: {
       fatherStatus: String,
       motherStatus: String,
@@ -150,17 +122,16 @@ const userSchema = new mongoose.Schema(
       },
     },
 
+    // Biography & Images
     aboutMe: {
       type: String,
       trim: true,
       maxlength: 1000,
     },
-    primaryImage: {
-      type: String,
-      trim: true,
-    },
+    primaryImage: { type: String, trim: true },
     images: [String],
 
+    // Account & Auth
     accountStatus: {
       type: String,
       enum: [
@@ -172,15 +143,33 @@ const userSchema = new mongoose.Schema(
       ],
       default: "VerificationPending",
     },
-    googleId: {
-      type: String,
-      unique: true,
-      sparse: true,
-    },
-    refreshToken: {
-      type: String,
-    },
+    googleId: { type: String, unique: true, sparse: true },
+    refreshToken: String,
 
+    // Presence & Calls
+    lastSeen: { type: Date, default: Date.now },
+    onlineStatus: { type: Boolean, default: false },
+    callHistory: [
+      {
+        withUser: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+        type: { type: String, enum: ["audio", "video"] },
+        startedAt: Date,
+        endedAt: Date,
+        callStatus: {
+          type: String,
+          enum: ["missed", "completed", "declined"],
+        },
+      },
+    ],
+
+    // Matches & Preferences
+    isPremium: { type: Boolean, default: false },
+    matches: {
+      recent: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+      new: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+      premium: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+      all: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    },
     partnerPreferences: {
       ageRange: { min: Number, max: Number },
       heightRange: { min: Number, max: Number },
@@ -193,11 +182,35 @@ const userSchema = new mongoose.Schema(
       diets: [String],
       professions: [String],
     },
+
+    // Notifications
+    notifications: [
+      {
+        type: {
+          type: String,
+          enum: [
+            "new-match",
+            "premium-match",
+            "call-invite",
+            "message",
+            "system",
+          ],
+        },
+        from: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+        createdAt: { type: Date, default: Date.now },
+        read: { type: Boolean, default: false },
+      },
+    ],
   },
   {
     timestamps: true,
   }
 );
+
+// Compound & Geospatial Indexes
+userSchema.index({ "location.coordinates": "2dsphere" });
+userSchema.index({ gender: 1, religion: 1, "location.coordinates": "2dsphere" });
+userSchema.index({ isPremium: 1, annualIncome: 1 });
 
 const User = mongoose.model("User", userSchema);
 

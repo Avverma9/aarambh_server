@@ -18,7 +18,7 @@ const s3 = new S3Client({
   },
 });
 
-const upload = multer({
+export const  upload = multer({
   storage: multerS3({
     s3: s3,
     bucket: AWS_BUCKET_NAME,
@@ -36,4 +36,4 @@ const upload = multer({
   },
 }).any();  // Accept files from any field name
 
-export { upload };
+

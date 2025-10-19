@@ -6,22 +6,25 @@ import {
   deleteUser,
   addImages,
   setPrimaryImage,
-  deleteImage
+  deleteImage,
+  getAllUsers
 } from '../controllers/user.controller.mjs';
 import { register } from '../controllers/auth.controller.mjs';
 import { authMiddleware } from '../auth/auth.middleware.mjs';
+import { upload } from '../upload/upload.mjs';
+// import upload from '../upload/upload.mjs';
 
 const router = express.Router();
 
 
-router.post("/register",register)
+router.post("/register", upload,register)
 router.post("/create-profile",createUser)
-
+router.get("/get/all/users",authMiddleware,getAllUsers)
 router.route('/:userId',authMiddleware,)
   .get(getUserProfile)
   .put(updateUserProfile)
   .delete(deleteUser);
-
+router.get('/profile/me',authMiddleware,getUserProfile)
 router.route('/:userId/images')
   .post(addImages)
   .delete(deleteImage);
