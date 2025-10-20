@@ -4,7 +4,7 @@ export const register = async (req, res) => {
   try {
     const userData = { ...req.body };
 
-    // ✅ If DOB is provided, calculate age dynamically
+    // Calculate age from dob if provided
     if (userData?.dob) {
       const birthDate = new Date(userData.dob);
       const today = new Date();
@@ -12,7 +12,6 @@ export const register = async (req, res) => {
       let age = today.getFullYear() - birthDate.getFullYear();
       const monthDiff = today.getMonth() - birthDate.getMonth();
 
-      // adjust age if birthday not reached yet this year
       if (
         monthDiff < 0 ||
         (monthDiff === 0 && today.getDate() < birthDate.getDate())
@@ -20,10 +19,10 @@ export const register = async (req, res) => {
         age--;
       }
 
-      userData.age = age; // ✅ Add calculated age
+      userData.age = age;
     }
 
-    // ✅ Check if user already exists
+    // Check existing user
     const existingUser = await User.findOne({ email: userData.email });
     if (existingUser) {
       return res
@@ -31,7 +30,7 @@ export const register = async (req, res) => {
         .json({ message: "User with this email already exists" });
     }
 
-    // ✅ Extract images if uploaded
+    // Handle images
     userData.images = req.files
       ? req.files.map((file) => file.location || file.path)
       : [];
@@ -40,7 +39,10 @@ export const register = async (req, res) => {
       userData.primaryImage = userData.images[0];
     }
 
-    // ✅ Create new user with all data
+    // ✅ SET profileCompleted to true
+    userData.profileCompleted = true;
+
+    // Create user with modified userData
     const user = await User.create(userData);
 
     return res.status(201).json({
