@@ -27,6 +27,7 @@ const userSchema = new mongoose.Schema(
       enum: ["Male", "Female", "Other"],
       required: true,
     },
+    hobbies:[String],
     dob: {
       type: Date,
       required: [true, "Date of birth is required."],

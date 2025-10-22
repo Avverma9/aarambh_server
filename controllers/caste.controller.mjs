@@ -1,8 +1,9 @@
 import Caste from "../models/caste.model.mjs";
+import { asyncHandler } from "../util/asyncHandler.mjs";
 export const addCastes = async (req, res) => {
   try {
-    const casteArray = req.body;
-    if (!Array.isArray(casteArray) || casteArray.length === 0) {
+    const { castes } = req.body;
+    if (!Array.isArray(castes) || castes.length === 0) {
       return res.status(400).json({
         success: false,
         message: "Request body must be a non-empty array of caste objects",
@@ -10,13 +11,13 @@ export const addCastes = async (req, res) => {
     }
 
     // Validate each entry
-    const validEntries = casteArray.filter(
+    const validEntries = castes.filter(
       (item) =>
         typeof item.caste === "string" &&
         Array.isArray(item.subCaste) &&
         Array.isArray(item.gotra)
     );
-    if (validEntries.length !== casteArray.length) {
+    if (validEntries.length !== castes.length) {
       return res.status(422).json({
         success: false,
         message:
@@ -48,3 +49,25 @@ export const addCastes = async (req, res) => {
     });
   }
 };
+
+export const getCastes = asyncHandler(async (req, res) => {
+  const getData = await Caste.find();
+  res.status(200).json(getData);
+});
+
+
+
+export const getSubCasteByCaste = asyncHandler(async (req, res) => {
+  const { caste } = req.query;
+  const getData = await Caste.findOne({ caste });
+  const subCaste = getData.subCaste;
+  res.status(200).json(subCaste);
+});
+
+export const getGotraByCaste = asyncHandler(async (req, res)=>{
+  const {caste} = req.query
+  const getData = await Caste.findOne({caste})
+  const gotra = getData.gotra
+  res.status(200).json(gotra)
+
+})

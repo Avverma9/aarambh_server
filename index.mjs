@@ -15,6 +15,10 @@ app.set("trust proxy", 1);
 // ✅ Middlewares
 app.use(express.json());
 app.use(cookieParser());
+app.use((err, req, res, next) => {
+  console.error(err.message);
+  res.status(500).json({ error: err.message || "Internal Server Error" });
+});
 
 // ✅ CORS setup using the `cors` middleware
 app.use(
