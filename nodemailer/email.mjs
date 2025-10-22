@@ -10,10 +10,8 @@ const router = express.Router(); // ✅ use Router, not express()
 const otpStore = {};
 
 const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
+  service: "gmail",
   port: 587,
-  secure: false,
-  requireTLS: true,
   auth: {
     user: process.env.NODEMAILER_EMAIL,
     pass: process.env.NODEMAILER_PASSWORD,
