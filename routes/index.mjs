@@ -4,7 +4,7 @@ import emailRoute from "../nodemailer/email.mjs";
 import casteRoute from "./caste.route.mjs";
 import hobbiesRoute from "./hobbies.route.mjs";
 import rashiRoute from "./rashi.route.mjs";
-// import nakshatraRoute from "./nakshatra.route.mjs";
+import nakshatraRoute from "./nakshatra.route.mjs";
 import express from "express";
 const router = express.Router();
 
@@ -14,6 +14,6 @@ router.use("/users", userRoute);
 router.use("/caste", casteRoute);
 router.use("/hobbies", hobbiesRoute);
 router.use("/rashi", rashiRoute);
-// router.use("/nakshatra", nakshatraRoute);
+router.use("/nakshatra", nakshatraRoute);
 
 export default router;

@@ -13,5 +13,6 @@ export const addRashi = asyncHandler(async (req, res) => {
 });
 export const getRashi = asyncHandler(async (req, res) => {
   const getData = await Rashi.find();
-  res.status(200).json(getData);
+  const rashi = getData.map((rashi) => rashi.name);
+  res.status(200).json(rashi);
 });

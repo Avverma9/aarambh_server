@@ -52,7 +52,8 @@ export const addCastes = async (req, res) => {
 
 export const getCastes = asyncHandler(async (req, res) => {
   const getData = await Caste.find();
-  res.status(200).json(getData);
+  const caste = getData.map((caste) => caste.caste);
+  res.status(200).json(caste);
 });
 
 

@@ -14,7 +14,8 @@ export const addHobbies = asyncHandler(async (req, res) => {
 
 export const getHobbies = asyncHandler(async (req, res) => {
   const getData = await Hobbies.find();
-  res.status(200).json(getData);
+  const hobbies = getData.map((hobby) => hobby.name);
+  res.status(200).json(hobbies);
 });
 
 export const deleteHobbies = asyncHandler(async (req, res) => { 
