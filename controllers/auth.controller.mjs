@@ -2,47 +2,38 @@ import User from "../models/user.model.mjs";
 
 export const register = async (req, res) => {
   try {
-    const userData = { ...req.body };
+    const { dob, email, profession, aboutMe, ...restData } = req.body;
 
-    // Calculate age from dob if provided
-    if (userData?.dob) {
-      const birthDate = new Date(userData.dob);
+    const userData = { ...restData, email, profession };
+
+    if (dob) {
+      const birthDate = new Date(dob);
       const today = new Date();
-
       let age = today.getFullYear() - birthDate.getFullYear();
       const monthDiff = today.getMonth() - birthDate.getMonth();
 
-      if (
-        monthDiff < 0 ||
-        (monthDiff === 0 && today.getDate() < birthDate.getDate())
-      ) {
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
         age--;
       }
 
+      userData.dob = dob;
       userData.age = age;
     }
 
-    // Check existing user
-    const existingUser = await User.findOne({ email: userData.email });
+    const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res
-        .status(400)
-        .json({ message: "User with this email already exists" });
+      return res.status(400).json({ message: "User with this email already exists" });
     }
 
-    // Handle images
-    userData.images = req.files
-      ? req.files.map((file) => file.location || file.path)
-      : [];
+    userData.images = req.files ? req.files.map((file) => file.location || file.path) : [];
 
     if (userData.images.length > 0) {
       userData.primaryImage = userData.images[0];
     }
 
-    // ✅ SET profileCompleted to true
+    userData.aboutMe = aboutMe || `I am a ${profession || "professional"} looking for a meaningful connection.`;
     userData.profileCompleted = true;
 
-    // Create user with modified userData
     const user = await User.create(userData);
 
     return res.status(201).json({
@@ -51,7 +42,7 @@ export const register = async (req, res) => {
       age: userData.age || null,
     });
   } catch (error) {
-    console.error("❌ Error during user registration:", error);
+    console.error("Error during user registration:", error);
     return res.status(500).json({
       message: "Registration failed",
       error: error.message,

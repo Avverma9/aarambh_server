@@ -4,7 +4,7 @@ import User from '../models/user.model.mjs';
 export const authMiddleware = async (req, res, next) => {
   try {
 
-    const token = req.cookies.accessToken;
+    const token = req.headers.authorization || req.cookies.accessToken;
 
     if (!token) {
       return res.status(401).json({
@@ -66,7 +66,7 @@ export const authMiddleware = async (req, res, next) => {
           httpOnly: true,
           secure: process.env.NODE_ENV === "production",
           sameSite: "strict",
-          maxAge: 15 * 60 * 1000, // 15 minutes
+          maxAge: 15 * 60 * 10000, // 15 minutes
         });
 
         // Attach user to the request and proceed
