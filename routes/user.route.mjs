@@ -17,7 +17,7 @@ const router = express.Router();
 
 router.post("/register", upload,register)
 router.get("/get/all/users",getAllUsers)
-router.route('/:userId',authMiddleware,)
+router.route('/get-particular-user/:userId',authMiddleware,)
   .get(getUserProfile)
   .put(updateUserProfile)
   .delete(deleteUser);

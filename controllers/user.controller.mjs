@@ -2,7 +2,7 @@ import User from "../models/user.model.mjs";
 
 export const getUserProfile = async (req, res) => {
   try {
-    const userId = req.user.userId || req.user._id;
+    const userId = req.params.userId || req.user.userId;
     
     // Fetch user with populated matches
     const user = await User.findById(userId).select("-password -refreshToken");
