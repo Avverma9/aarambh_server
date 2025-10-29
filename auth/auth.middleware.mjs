@@ -3,8 +3,18 @@ import User from '../models/user.model.mjs';
 
 export const authMiddleware = async (req, res, next) => {
   try {
-
-    const token = req.headers.authorization || req.cookies.accessToken;
+    // ✅ Get token from Authorization header
+    let token = req.headers.authorization;
+    
+    // Remove "Bearer " prefix if present
+    if (token && token.startsWith('Bearer ')) {
+      token = token.substring(7);
+    }
+    
+    // Fallback to cookie if header not present (for web clients)
+    if (!token) {
+      token = req.cookies.accessToken;
+    }
 
     if (!token) {
       return res.status(401).json({
@@ -43,44 +53,10 @@ export const authMiddleware = async (req, res, next) => {
         message: 'Invalid token.',
       });
     } else if (error.name === 'TokenExpiredError') {
-      // Access token has expired, try to refresh it
-      const refreshToken = req.cookies.refreshToken;
-      if (!refreshToken) {
-        return res.status(401).json({ success: false, message: 'Access token expired, no refresh token provided.' });
-      }
-
-      try {
-        const decodedRefresh = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
-        const user = await User.findById(decodedRefresh.userId);
-
-        if (!user || user.refreshToken !== refreshToken) {
-          return res.status(403).json({ success: false, message: 'Invalid refresh token.' });
-        }
-
-        // Issue a new access token
-        const payload = { userId: user._id, email: user.email };
-        const newAccessToken = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '15m' });
-
-        // Set the new access token in the cookie
-        res.cookie("accessToken", newAccessToken, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === "production",
-          sameSite: "strict",
-          maxAge: 15 * 60 * 10000, // 15 minutes
-        });
-
-        // Attach user to the request and proceed
-        req.user = payload;
-        next();
-
-      } catch (refreshError) {
-        return res.status(403).json({
-          success: false,
-          message: 'Refresh token is invalid or expired. Please log in again.',
-          error: refreshError.message
-        });
-      }
-
+      return res.status(401).json({
+        success: false,
+        message: 'Access token expired. Please refresh.',
+      });
     } else {
       return res.status(500).json({
         success: false,
@@ -90,6 +66,7 @@ export const authMiddleware = async (req, res, next) => {
     }
   }
 };
+
 
 export const adminMiddleware = async (req, res, next) => {
   try {

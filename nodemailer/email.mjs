@@ -103,10 +103,14 @@ router.post("/verify-otp", async (req, res) => {
 
 
 router.post("/refresh-token", async (req, res) => {
-  const refreshToken = req.cookies.refreshToken;
+  // ✅ Accept refresh token from both body and cookies
+  const refreshToken = req.body.token || req.cookies.refreshToken;
 
   if (!refreshToken) {
-    return res.status(401).json({ message: "Refresh token not provided" });
+    return res.status(401).json({ 
+      success: false,
+      message: "Refresh token not provided" 
+    });
   }
 
   try {
@@ -114,13 +118,18 @@ router.post("/refresh-token", async (req, res) => {
     const user = await User.findById(decoded.userId);
 
     if (!user || user.refreshToken !== refreshToken) {
-      return res.status(403).json({ message: "Invalid refresh token" });
+      return res.status(403).json({ 
+        success: false,
+        message: "Invalid refresh token" 
+      });
     }
 
     const payload = { userId: user._id, email: user.email };
-    const newAccessToken = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "15m" });
+    const newAccessToken = jwt.sign(payload, process.env.JWT_SECRET, { 
+      expiresIn: "15m" 
+    });
 
-    // ✅ Update the cookie with new access token
+    // ✅ Set cookie for web clients
     res.cookie("accessToken", newAccessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -128,9 +137,18 @@ router.post("/refresh-token", async (req, res) => {
       maxAge: 15 * 60 * 1000,
     });
 
-    res.json({ message: "New access token issued" });
+    // ✅ Also send in response body for mobile clients
+    res.json({ 
+      success: true,
+      message: "New access token issued",
+      accessToken: newAccessToken 
+    });
   } catch (error) {
-    return res.status(403).json({ message: "Invalid or expired refresh token", error: error.message });
+    return res.status(403).json({ 
+      success: false,
+      message: "Invalid or expired refresh token", 
+      error: error.message 
+    });
   }
 });
 
